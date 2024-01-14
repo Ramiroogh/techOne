@@ -1,14 +1,14 @@
 export default {
-    name: 'heroImage',
+    name: 'imagesHero',
     type: 'document',
     title: 'Two Hero Images',
     fields: [{
-        name: 'image1',
+        name: 'imageOne',
         type: 'image',
         title: 'First Image',
     },
     {
-        name: 'image2',
+        name: 'imageTwo',
         type: 'image',
         title: 'Second Image',
     }]

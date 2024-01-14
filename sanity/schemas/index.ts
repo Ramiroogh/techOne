@@ -1,5 +1,5 @@
 import category from "./category";
-import heroImages from "./heroImages";
+import imagesHero from "./imagesHero";
 import product from "./product";
 
-export const schemaTypes = [product, category, heroImages]
+export const schemaTypes = [product, category, imagesHero]

@@ -94,19 +94,19 @@ Lo mas importante de esto, es que en el schema **Products.ts**, en este fragment
 lo que sucede, es que estamos referenciando __category a product__. Por lo cual, luego de crear una categoria, lo podemos asignar a cualquier articulo de nuestro E-commerce.
 
 ### heroImages.ts
-Este schema, nos ayudara a incluir varias imagenes de nuestros productos.
+Este schema, nos ayudara a incluir dos imagenes para el Hero principal de nuestra aplicación.
 ```typescript
 export default {
-    name: 'heroImage',
+    name: 'imagesHero',
     type: 'document',
     title: 'Two Hero Images',
     fields: [{
-        name: 'image1',
+        name: 'imageOne',
         type: 'image',
         title: 'First Image',
     },
     {
-        name: 'image2',
+        name: 'imageTwo',
         type: 'image',
         title: 'Second Image',
     }]
@@ -166,13 +166,13 @@ import imageUrlBuilder from "@sanity/image-url";
 import { createClient } from "next-sanity";
 
 export const client = createClient({
-    projectId: 'o74XXXqcnh',
+    projectId: 'o74sqcnh',
     dataset: 'production',
-    apiVersion: '13-1-2024',
+    apiVersion: '2022-03-07',
     useCdn: true,
 })
 
-const builder = imageUrlBuilder
+const builder = imageUrlBuilder(client)
 
 export function urlFor(source: any) {
     return builder.image(source)
@@ -187,4 +187,23 @@ No entrare en detalles ya que algunos componentes hay que agregarle nuevas modif
 
 Ademas, podras ver los componentes ya creados, pero usare Tailwind y Shadcn, y algunos componentes de shadcn deberas instalarlos manualmente.
 
-# Paso 5:
+# Paso 5: Configurar next.config.js
+Al momento de agregar la logica asincrona de los componentes para traer los datos desde sanity, con los archivos de lib, es necesario configurar el cdn de sanity, ya que estamos obteniendo recursos de otro Host:
+
+```typescript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    images: {
+        remotePatterns: [
+            {
+              protocol: "https",
+              hostname: "cdn.sanity.io**",
+            },
+          ],
+    }
+}
+
+module.exports = nextConfig
+```
+#### Importante:
+Domains ya fue deprecado, debe usarse `remotePatterns`.
