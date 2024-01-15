@@ -6,3 +6,14 @@ export interface simplifiedProduct {
     slug: string;
     categoryName: string;
 }
+
+// Interfaz para Mostrar todos los datos del producto
+export interface fullProduct {
+    _id: string;
+    images: any;
+    price: number;
+    name: string;
+    description: string;
+    slug: string;
+    categoryName: string;
+}
