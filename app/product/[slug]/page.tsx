@@ -3,6 +3,7 @@ import { fullProduct } from "@/app/interfaces/interface";
 import { client } from "@/app/lib/sanity";
 
 async function getData(slug: string) {
+    // Para esta query, se utiliza la interfaz "fullProduct".
     const query = `*[_type == 'product' && slug.current == "${slug}"][0]{
         _id,
         images,
