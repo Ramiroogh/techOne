@@ -408,3 +408,108 @@ Ahora es importante configurar el Hook de estado `const [bigImage, setBigImage] 
 Mas bien, vamos a agregar mas logica, ya que por ahora no estamos seteando ningun valor, solo esta cargando una imagen por defecto al hacer el fetch a sanity, y solo trae una sola imagen.
 Vamos a imitar la funcionalidad de los ecommerce en el que podemos seleccionar las otras fotos en miniatura y que se seteen en la seccion donde aparece la imagen en tamaño mas grande.
 
+---
+# Paso 9: Ruta Dinamica para las Categorias
+Es momento de definir la logica de las vistas para nuestras categorias, es basicamente repetir lo que venimos haciendo, usando una interfaz `simplifiedProduct`, haciedo uso de client en /lib, y pintando los datos que traemos desde el cliente.
+
+```typescript
+    └── app
+         └── [category]
+                  └── page.tsx
+```
+
+Aca esta el codigo de esta pagina dinamica:
+```typescript
+import Link from "next/link";
+import Image from "next/image";
+import { simplifiedProduct } from "../interfaces/interface";
+import { client } from "../lib/sanity"
+
+async function getData(category: string) {
+    const query = `*[_type == "product" && category->name == "${category}"] {
+        _id,
+        "imageUrl": images[0].asset->url,
+        price,
+        name,
+        "slug": slug.current,
+        "categoryName": category->name
+    }`;
+    const data = await client.fetch(query)
+    return data;
+}
+
+
+export default async function CategoryPage({params} : {params: {category : string}}) {
+    
+    const data: simplifiedProduct[] = await getData(params.category);
+
+    return (
+        <div className="bg-white">
+            <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold tracing-tight text-gray-900">Productos de la categoria {params.category}</h2>
+
+                </div>
+
+                <div className="mt-6 grid frid-cols-1 gap-x-6 gap-y-10 sm:frid-cols2 lg:grid-cols-4 xl:gap-x-8">
+                    {data.map((product) => (
+                        <div key={product._id} className="group relative">
+                            <div className="aspect-square w-full overflow-hidden rounded-md bg-gray-200 group-hover:opacity-75 lg:h-80">
+                                <Image src={product.imageUrl} alt="image" width={500} height={500} className="w-full h-full object-cover object-center lg:h-full lg:w-full"/>
+                            </div>
+
+                            <div className="mt-4 flex justify-between">
+                                <div >
+                                    <h3 className="text-lg text-gray-700 justify-between">
+                                        <Link href={`/product/${product.slug}`}>
+                                        {product.name}
+                                        </Link>
+                                    </h3>
+                                    <p className="text-sm text-gray-700">{product.categoryName}</p>
+                                </div>
+                                <p className="font-medium">$ {product.price}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+```
+Si nos damos cuenta, no es algo nuevo, simplemente estamos desestructurando los parametros, ya que estos parametros estan apuntando al componente `Navbar.tsx`.
+Al ingresar a algun enlace de estos, nos redirije a la pagina dinamica de la respectiva categoria.
+en Navbar tenemos:
+```typescript
+import { usePathname } from "next/navigation";
+
+const links = [
+    {name: 'Home', href: '/'},
+    {name: 'Laptop', href: '/Laptop'},
+    {name: 'Smartphone', href: '/Smartphone'}
+]
+```
++ Tambien, en la query de la ruta ``[category]``, tenemos los datos que podremos acceder, siempre que coincida con una categoria en especifico.
+
+Esto es un beneficio, ya que no necesitamos hacer dos o mas paginas para todas las categorias inecesariamente, solo con una es suficiente, ya que los params, que estan desestructurados haran lo suyo, pero solo podremos acceder a estos datos de esta query:
+```typescript
+async function getData(category: string) {
+    const query = `*[_type == "product" && category->name == "${category}"] {
+        _id,
+        "imageUrl": images[0].asset->url,
+        price,
+        name,
+        "slug": slug.current,
+        "categoryName": category->name
+    }`;
+    const data = await client.fetch(query)
+    return data;
+}
+```
+
+---
+# Paso 10: Configurar `use-shopping-cart`
++ 
+El paquete use-shopping-cart es un React Hook que maneja el estado del carrito de compras y la lógica para stripe.
+
+Como primer paso, vamos a crear un componente llamado `Providers.tsx`:

@@ -5,6 +5,7 @@ import { ShoppingBag } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useShoppingCart } from "use-shopping-cart";
 
 const links = [
     {name: 'Home', href: '/'},
@@ -14,6 +15,7 @@ const links = [
 
 export default function Navbar() {
     const pathname = usePathname();
+    const {handleCartClick} = useShoppingCart()
 
     return (
         <header className="mb-8 border-b">
@@ -41,7 +43,7 @@ export default function Navbar() {
                 </nav>
 
                 <div className="flex divide-b border-r sm:border-l">
-                    <Button className="flex flex-col gap-y-1.5 h-12 w-12 sm:h-20 sm:w-20 md:h-20 md:w-20 rounded-none bg-violet-800 hover:bg-slate-800">
+                    <Button onClick={() => handleCartClick()} className="flex flex-col gap-y-1.5 h-12 w-12 sm:h-20 sm:w-20 md:h-20 md:w-20 rounded-none bg-violet-800 hover:bg-slate-800">
                         <ShoppingBag />
                         <span className="hidden text-xs font-semibold text-gray-200 sm:block">Cart</span>
                     </Button>
