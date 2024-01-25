@@ -1,8 +1,12 @@
+// UI
+import AddToCart from "@/app/components/AddToCart";
 import ImageGallery from "@/app/components/ImageGallery";
+import { Star, Truck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 import { fullProduct } from "@/app/interfaces/interface";
 import { client } from "@/app/lib/sanity";
-import { Button } from "@/components/ui/button";
-import { ShoppingCart, Star, Truck } from "lucide-react";
+
 
 async function getData(slug: string) {
     // Para esta query, se utiliza la interfaz "fullProduct".
@@ -60,7 +64,15 @@ export default async function ProductPage({params} : { params : { slug: string;}
                             </div>
 
                             <div className="flex gap-2.5">
-                                <Button className="text-sm"><ShoppingCart className="w-5 h-5 mr-3"/> Añadir al Carrito</Button>
+                                <AddToCart
+                                    currency="USD"
+                                    name={data.name}
+                                    description={data.description}
+                                    image={data.images[0]}
+                                    price={data.price}
+                                    key={data._id}
+                                    id={data._id}
+                                />
                                 <Button variant={"secondary"}>Chekout now</Button>
                             </div>
 

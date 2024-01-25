@@ -513,3 +513,157 @@ async function getData(category: string) {
 El paquete use-shopping-cart es un React Hook que maneja el estado del carrito de compras y la lógica para stripe.
 
 Como primer paso, vamos a crear un componente llamado `Providers.tsx`:
+```typescript
+"use client"
+
+import { ReactNode } from "react"
+import { CartProvider as USCProvider } from "use-shopping-cart"
+
+export default function CartProvider({children}: {children: ReactNode}) {
+
+    return (
+        <USCProvider mode="payment" cartMode="client-only" stripe={process.env.NEXT_PUBLIC_STRIPE_KEY as string} successUrl="http://localhost:3000/success" cancelUrl="http://localhost:3000/error" currency="USD" billingAddressCollection={true} shouldPersist={true} language="en-US">
+            {children}
+        </USCProvider>
+    )
+}
+```
+
+### Crear el componente ShoppingCartModal.tsx
+Este componente va a manejar el estado del carrito, ademas usaremos la libreria `Shadcn` para utilizar el componente sheets, este mismo es un tipo de modal que aparece a la derecha del viewport:
+
+```typescript
+"use client"
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+  } from "@/components/ui/sheet"
+import { useShoppingCart } from "use-shopping-cart"
+
+export default function ShoppingCartModal() {
+
+    // Hook para manejar el estado del carrito, desde aca, y en Navbar.tsx
+    const {cartCount, handleCartClick, shouldDisplayCart} = useShoppingCart()
+
+    return(
+        <div>
+            <Sheet open={shouldDisplayCart} onOpenChange={() => handleCartClick()}>
+                <SheetContent className="sm:max-w-lg w-[90vw]">
+                    <SheetHeader>
+                        <SheetTitle>Are you absolutely sure?</SheetTitle>
+                    </SheetHeader>
+
+                    <div className="h-full flex flex-col justify-between">
+                        <div className="mt-8 flex-1 overflow-y-auto">
+                            <ul className="-my-6 divide-y divide-gray-200">
+                                {cartCount === 0 ? (
+                                    <h1 className=" py-6">No hay Articulos en el Carrito</h1>
+                                ): (
+                                    <h1 className="text-3xl py-6">hay x Articulos en el carrito</h1>
+                                )}
+                            </ul>
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+        </div>
+    )
+}
+```
+Algo para analizar de aca, es que `const {cartCount, handleCartClick, shouldDisplayCart} = useShoppingCart()`, es la configuracion del Hook.
+
++ `cartCount`, nos lo ofrece de forma nativa desde `import { useShoppingCart } from "use-shopping-cart"`. Este nos devuelve un "true o false", ideal para comprobar si existe algun producto añadido o no, y asi mismo vincularlo con la pasarella de pago despues.
+
+NOTA: si nos fijamos en el html, veremos una renderizacion condicional en el que usamos esta propiedad del hook:
+```typescript
+{cartCount === 0 ? (
+    <h1 className=" py-6">No hay ArticuloCarrito</h1>
+): (
+    <h1 className="text-3xl py-6">hay x Articulos en el carrito</h1>
+)}
+```
+
++ `handleCartClick` tambien viene de forma nativa, este mismo debe estar configurado en el componente de shadCN, `<Sheet open={shouldDisplayCart} onOpenChange={() => handleCartClick()}>`.
+Esto activa o desactiva la vista UI, tambien debera estar configurado en el Navbar.tsx.
+```typescript
+"use client"
+// UI
+import { Button } from "@/components/ui/button";
+import { ShoppingBag } from "lucide-react";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useShoppingCart } from "use-shopping-cart";
+
+const links = [
+    {name: 'Home', href: '/'},
+    {name: 'Laptop', href: '/Laptop'},
+    {name: 'Smartphone', href: '/Smartphone'}
+]
+
+export default function Navbar() {
+    const pathname = usePathname();
+    const {handleCartClick} = useShoppingCart()
+
+    return (
+        <header className="mb-8 border-b">
+            <div className="flex items-center justify-between mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl">
+                <Link href='/'>
+                    <h1 className="text-2xl md:text-4xl font-bold">
+                    Tech<span className="text-primary">One</span>
+                    </h1>
+                </Link>
+
+                <nav className="hidden gap-12 lg:flex 2xl:ml-16">
+                    {links.map((link, index) => (
+                        <div key={index}>
+                            {pathname === link.href ? (
+                                <Link href={link.href} className="text-lg font-semibold text-primary">
+                                    {link.name}
+                                </Link>
+                            ) : (
+                                <Link href={link.href} className="text-lg font-semibold text-gray-600">
+                                    {link.name}
+                                </Link>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+
+                <div className="flex divide-b border-r sm:border-l">
+                    <Button onClick={() => handleCartClick()} className="flex flex-col gap-y-1.5 h-12 w-12 sm:h-20 sm:w-20 md:h-20 md:w-20 rounded-none bg-violet-800 hover:bg-slate-800">
+                        <ShoppingBag />
+                        <span className="hidden text-xs font-semibold text-gray-200 sm:block">Cart</span>
+                    </Button>
+                </div>
+            </div>
+        </header>
+    )
+}    
+```
+
++ `shouldDisplayCart` tambien viene de forma nativa, este mismo nos sirve para mostrar la vista, el handleCartClick maneja la ACCION, y el shouldDisplayCart, es el callback, producto de activar la acción.
+
+---
+# Paso 11: Configurar el Boton de "Añadir al Carrito"
+Lo siguiente que hay que hacer es crear el componente addToCart.tsx para agregar la logica de añadir al carrito y al mismo tiempo, que se active el modal del carrito.
+```typescript
+"use client"
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { useShoppingCart } from "use-shopping-cart";
+
+
+// Añadir producto al carrito y simultaneamente, ir al Carrito
+export default function AddToCart() {
+    const {addItem, handleCartClick} = useShoppingCart()
+    return (
+        <Button onClick={() => handleCartClick()} className="text-sm"><ShoppingCart className="w-5 h-5 mr-3"/>Añadir al Carrito</Button>
+    )
+}
+```
+

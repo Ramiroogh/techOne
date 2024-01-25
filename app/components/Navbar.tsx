@@ -5,6 +5,8 @@ import { ShoppingBag } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+// Carrito, tambien se maneja en ShoppingCartModal.tsx
 import { useShoppingCart } from "use-shopping-cart";
 
 const links = [
